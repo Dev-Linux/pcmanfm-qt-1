@@ -1,3 +1,11 @@
+pcmanfm-qt (0.9.0+20151031-1) unstable; urgency=medium
+
+  * Cherry-picked upstream version 0.9.0+20151031.
+  * Set new minimum versions for liblxqt and libqtxdg.
+  * New Symbol added.
+
+ -- Alf Gaida <agaida@siduction.org>  Sat, 31 Oct 2015 11:59:53 +0100
+
 pcmanfm-qt (0.9.0+20150929-1) unstable; urgency=medium
 
   * Cherry-picked upstream version 0.9.0+20150929.
