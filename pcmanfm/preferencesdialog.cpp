@@ -26,9 +26,9 @@
 #include <QStringBuilder>
 #include <QSettings>
 
-#include "folderview.h"
+#include <libfm-qt/folderview.h>
 
-using namespace PCManFM;
+namespace PCManFM {
 
 static int bigIconSizes[] = {96, 72, 64, 48, 36, 32, 24, 20};
 static int smallIconSizes[] = {48, 36, 32, 24, 20, 16, 12};
@@ -45,13 +45,7 @@ PreferencesDialog::PreferencesDialog (QString activePage, QWidget* parent):
 
   initFromSettings();
 
-  if(!activePage.isEmpty()) {
-    QWidget* page = findChild<QWidget*>(activePage + "Page");
-    if(page) {
-      int index = ui.stackedWidget->indexOf(page);
-      ui.listWidget->setCurrentRow(index);
-    }
-  }
+  selectPage(activePage);
   adjustSize();
 }
 
@@ -362,3 +356,14 @@ void PreferencesDialog::accept() {
   QDialog::accept();
 }
 
+void PreferencesDialog::selectPage(QString name) {
+  if(!name.isEmpty()) {
+    QWidget* page = findChild<QWidget*>(name + "Page");
+    if(page) {
+      int index = ui.stackedWidget->indexOf(page);
+      ui.listWidget->setCurrentRow(index);
+    }
+  }
+}
+
+} // namespace PCManFM

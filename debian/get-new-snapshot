@@ -1,0 +1,17 @@
+#!/bin/bash
+
+ls | grep -v "debian" |  xargs rm -r
+
+snapdir=$(mktemp -d)
+echo "$snapdir"
+pushd "$snapdir"
+    git clone git@github.com:lxde/pcmanfm-qt snapshot
+    pushd snapshot
+       description=$(git describe --always)
+       rm -rf .git*
+    popd
+    tar cfvJ snapshot.orig.tar.xz snapshot
+popd
+tar xf "$snapdir/snapshot.orig.tar.xz" --strip-components 1
+dch "New snapshot: $description"
+rm -rfv "$snapdir"

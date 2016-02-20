@@ -143,6 +143,15 @@ protected Q_SLOTS:
 
   void onBackForwardContextMenu(QPoint pos);
 
+  void tabContextMenu(const QPoint& pos);
+  void closeLeftTabs();
+  void closeRightTabs();
+  void closeOtherTabs() {
+    closeLeftTabs();
+    closeRightTabs();
+  }
+  void focusPathEntry();
+
 protected:
   // void changeEvent( QEvent * event);
   void closeTab(int index);
@@ -162,6 +171,7 @@ private:
   QLabel* fsInfoLabel;
   FmBookmarks* bookmarks;
   Launcher fileLauncher_;
+  int rightClickIndex;
 };
 
 }

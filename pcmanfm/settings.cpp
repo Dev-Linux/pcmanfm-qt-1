@@ -25,10 +25,10 @@
 #include <QSettings>
 #include <QApplication>
 #include "desktopwindow.h"
-#include "utilities.h"
+#include <libfm-qt/utilities.h>
 // #include <QDesktopServices>
 
-using namespace PCManFM;
+namespace PCManFM {
 
 inline static const char* bookmarkOpenMethodToString(OpenDirTargetType value);
 inline static OpenDirTargetType bookmarkOpenMethodFromString(const QString str);
@@ -96,6 +96,13 @@ Settings::Settings():
   showThumbnails_(true),
   archiver_(),
   siUnit_(false),
+  placesHome_(true),
+  placesDesktop_(true),
+  placesApplications_(true),
+  placesTrash_(true),
+  placesRoot_(true),
+  placesComputer_(true),
+  placesNetwork_(true),
   bigIconSize_(48),
   smallIconSize_(24),
   sidePaneIconSize_(24),
@@ -109,7 +116,11 @@ Settings::~Settings() {
 QString Settings::profileDir(QString profile, bool useFallback) {
   // NOTE: it's a shame that QDesktopServices does not handle XDG_CONFIG_HOME
   // try user-specific config file first
-  QString dirName = QLatin1String(qgetenv("XDG_CONFIG_HOME"));
+  QString dirName;
+  // WARNING: Don't use XDG_CONFIG_HOME with root because it might
+  // give the user config directory if gksu-properties is set to su.
+  if(geteuid())
+    dirName = QLatin1String(qgetenv("XDG_CONFIG_HOME"));
   if (dirName.isEmpty())
     dirName = QDir::homePath() % QLatin1String("/.config");
   dirName = dirName % "/pcmanfm-qt/" % profile;
@@ -150,13 +161,13 @@ bool Settings::loadFile(QString filePath) {
     // the value from XSETTINGS instead of hard code a fallback value.
     fallbackIconThemeName_ = "elementary"; // fallback icon theme name
   }
-  suCommand_ = settings.value("SuCommand", "gksu %s").toString();
+  suCommand_ = settings.value("SuCommand", "lxqt-sudo %s").toString();
   setTerminal(settings.value("Terminal", "xterm").toString());
   setArchiver(settings.value("Archiver", "file-roller").toString());
   setSiUnit(settings.value("SIUnit", false).toBool());
 
   setOnlyUserTemplates(settings.value("OnlyUserTemplates", false).toBool());
-  setTemplateTypeOnce(settings.value("OemplateTypeOnce", false).toBool());
+  setTemplateTypeOnce(settings.value("TemplateTypeOnce", false).toBool());
   setTemplateRunApp(settings.value("TemplateRunApp", false).toBool());
 
   settings.endGroup();
@@ -224,6 +235,16 @@ bool Settings::loadFile(QString filePath) {
   thumbnailIconSize_ = settings.value("ThumbnailIconSize", 128).toInt();
   settings.endGroup();
 
+  settings.beginGroup("Places");
+  placesHome_ = settings.value("PlacesHome", true).toBool();
+  placesDesktop_ = settings.value("PlacesDesktop", true).toBool();
+  placesApplications_ = settings.value("PlacesApplications", true).toBool();
+  placesTrash_ = settings.value("PlacesTrash", true).toBool();
+  placesRoot_ = settings.value("PlacesRoot", true).toBool();
+  placesComputer_ = settings.value("PlacesComputer", true).toBool();
+  placesNetwork_ = settings.value("PlacesNetwork", true).toBool();
+  settings.endGroup();
+
   settings.beginGroup("Window");
   fixedWindowWidth_ = settings.value("FixedWidth", 640).toInt();
   fixedWindowHeight_ = settings.value("FixedHeight", 480).toInt();
@@ -251,7 +272,7 @@ bool Settings::saveFile(QString filePath) {
   settings.setValue("SIUnit", siUnit_);
 
   settings.setValue("OnlyUserTemplates", onlyUserTemplates_);
-  settings.setValue("OemplateTypeOnce", templateTypeOnce_);
+  settings.setValue("TemplateTypeOnce", templateTypeOnce_);
   settings.setValue("TemplateRunApp", templateRunApp_);
 
   settings.endGroup();
@@ -313,6 +334,16 @@ bool Settings::saveFile(QString filePath) {
   settings.setValue("SmallIconSize", smallIconSize_);
   settings.setValue("SidePaneIconSize", sidePaneIconSize_);
   settings.setValue("ThumbnailIconSize", thumbnailIconSize_);
+  settings.endGroup();
+
+  settings.beginGroup("Places");
+  settings.setValue("PlacesHome", placesHome_);
+  settings.setValue("PlacesDesktop", placesDesktop_);
+  settings.setValue("PlacesApplications", placesApplications_);
+  settings.setValue("PlacesTrash", placesTrash_);
+  settings.setValue("PlacesRoot", placesRoot_);
+  settings.setValue("PlacesComputer", placesComputer_);
+  settings.setValue("PlacesNetwork", placesNetwork_);
   settings.endGroup();
 
   settings.beginGroup("Window");
@@ -511,4 +542,7 @@ void Settings::setTerminal(QString terminalCommand) {
     g_free(fm_config->terminal);
     fm_config->terminal = g_strdup(terminal_.toLocal8Bit().constData());
     g_signal_emit_by_name(fm_config, "changed::terminal");
-  }
+}
+
+
+} // namespace PCManFM

@@ -40,14 +40,14 @@
 #include "./application.h"
 #include "mainwindow.h"
 #include "desktopitemdelegate.h"
-#include "foldermenu.h"
-#include "filemenu.h"
-#include "cachedfoldermodel.h"
-#include "folderview_p.h"
-#include "fileoperation.h"
-#include "filepropsdialog.h"
-#include "utilities.h"
-#include "path.h"
+#include <libfm-qt/foldermenu.h>
+#include <libfm-qt/filemenu.h>
+#include <libfm-qt/cachedfoldermodel.h>
+#include <libfm-qt/folderview_p.h>
+#include <libfm-qt/fileoperation.h>
+#include <libfm-qt/filepropsdialog.h>
+#include <libfm-qt/utilities.h>
+#include <libfm-qt/path.h>
 #include "xdgdir.h"
 
 #include <QX11Info>
@@ -55,7 +55,7 @@
 #include <xcb/xcb.h>
 #include <X11/Xlib.h>
 
-using namespace PCManFM;
+namespace PCManFM {
 
 DesktopWindow::DesktopWindow(int screenNum):
   View(Fm::FolderView::IconMode),
@@ -77,7 +77,7 @@ DesktopWindow::DesktopWindow(int screenNum):
   View::setFileLauncher(&fileLauncher_);
 
   listView_ = static_cast<Fm::FolderViewListView*>(childView());
-  listView_->setMovement(QListView::Free);
+  listView_->setMovement(QListView::Snap);
   listView_->setResizeMode(QListView::Adjust);
   listView_->setFlow(QListView::TopToBottom);
 
@@ -398,18 +398,24 @@ void DesktopWindow::onRowsInserted(const QModelIndex& parent, int start, int end
 }
 
 void DesktopWindow::onRowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) {
+  Q_UNUSED(parent);
+  Q_UNUSED(start);
+  Q_UNUSED(end);
   if(!customItemPos_.isEmpty()) {
     // also delete stored custom item positions for the items currently being removed.
-    bool changed = false;
-    for(int row = start; row <= end ;++row) {
-      QModelIndex index = parent.child(row, 0);
-      FmFileInfo* file = proxyModel_->fileInfoFromIndex(index);
-      if(file) { // remove custom position for the item
-        if(customItemPos_.remove(fm_file_info_get_name(file)))
-          changed = true;
-      }
+    // Here we can't rely on ProxyFolderModel::fileInfoFromIndex() because, although rows
+    // aren't removed yet, files are already removed.
+    QHash<QByteArray, QPoint> _customItemPos = customItemPos_;
+    char* dektopPath = fm_path_to_str(fm_path_get_desktop());
+    QString desktopDir = QString(dektopPath) + QString("/");
+    g_free(dektopPath);
+    QHash<QByteArray, QPoint>::iterator it;
+    for(it = _customItemPos.begin(); it != _customItemPos.end(); ++it) {
+      const QByteArray& name = it.key();
+      if(!QFile::exists(desktopDir + QString::fromUtf8(name, name.length())))
+        customItemPos_.remove(it.key());
     }
-    if(changed)
+    if(customItemPos_ != _customItemPos)
       saveItemPositions();
   }
   queueRelayout();
@@ -430,18 +436,64 @@ void DesktopWindow::onIndexesMoved(const QModelIndexList& indexes) {
     if(index.column() == 0) {
       FmFileInfo* file = proxyModel_->fileInfoFromIndex(index);
       QRect itemRect = listView_->rectForIndex(index);
-      QByteArray name = fm_file_info_get_name(file);
-      customItemPos_[name] = itemRect.topLeft();
-      // qDebug() << "indexMoved:" << name << index << itemRect;
+      QPoint tl = itemRect.topLeft();
+      QRect workArea = qApp->desktop()->availableGeometry(screenNum_);
+      workArea.adjust(12, 12, -12, -12);
+      if(customItemPos_.keys(tl).isEmpty() // don't put items on each other
+         && tl.x() >= workArea.x() && tl.y() >= workArea.y()
+         && tl.x() + listView_->gridSize().width() <= workArea.right() + 1 // for historical reasons (-> Qt doc)
+         && tl.y() + listView_->gridSize().height() <= workArea.bottom() + 1) { // as above
+        QByteArray name = fm_file_info_get_name(file);
+        customItemPos_[name] = tl;
+        // qDebug() << "indexMoved:" << name << index << itemRect;
+      }
     }
   }
   saveItemPositions();
   queueRelayout();
 }
 
+void DesktopWindow::removeBottomGap() {
+  /************************************************************
+   NOTE: Desktop is an area bounded from below while icons snap
+   to its grid srarting from above. Therefore, we try to adjust
+   the vertical cell margin to prevent relatively large gaps
+   from taking shape at the desktop bottom.
+   ************************************************************/
+  QSize cellMargins = getMargins();
+  int workAreaHeight = qApp->desktop()->availableGeometry(screenNum_).height()
+                       - 24; // a 12-pix margin will be considered everywhere
+  int cellHeight = listView_->gridSize().height() + listView_->spacing();
+  int iconNumber = workAreaHeight / cellHeight;
+  int bottomGap = workAreaHeight % cellHeight;
+  /*******************************************
+   First try to make room for an extra icon...
+   *******************************************/
+  // If one pixel is subtracted from the vertical margin, cellHeight
+  // will decrease by 2 while bottomGap will increase by 2*iconNumber.
+  // So, we can add an icon to the bottom once this inequality holds:
+  // bottomGap + 2*n*iconNumber >= cellHeight - 2*n
+  // From here, we get our "subtrahend":
+  qreal exactNumber = ((qreal)cellHeight - (qreal)bottomGap)
+                      / (2.0 * (qreal)iconNumber + 2.0);
+  int subtrahend = (int)exactNumber + ((int)exactNumber == exactNumber ? 0 : 1);
+  if(subtrahend < cellMargins.height()) { // lack of margin doesn't seem good
+    cellMargins -= QSize(0, subtrahend);
+  }
+  /***************************************************
+   ... but if that can't be done, try to spread icons!
+   ***************************************************/
+  else
+    cellMargins += QSize(0, (bottomGap / iconNumber) / 2);
+  // set the new margins (if they're changed)
+  delegate_->setMargins(cellMargins);
+  setMargins(cellMargins);
+}
+
 // QListView does item layout in a very inflexible way, so let's do our custom layout again.
 // FIXME: this is very inefficient, but due to the design flaw of QListView, this is currently the only workaround.
 void DesktopWindow::relayoutItems() {
+  loadItemPositions(); // something may have changed
   // qDebug("relayoutItems()");
   if(relayoutTimer_) {
     // this slot might be called from the timer, so we cannot delete it directly here.
@@ -468,12 +520,14 @@ void DesktopWindow::relayoutItems() {
     QPoint pos = workArea.topLeft();
     for(; row < rowCount; ++row) {
       QModelIndex index = proxyModel_->index(row, 0);
+      int itemWidth = delegate_->sizeHint(listView_->getViewOptions(), index).width();
       FmFileInfo* file = proxyModel_->fileInfoFromIndex(index);
       QByteArray name = fm_file_info_get_name(file);
       QHash<QByteArray, QPoint>::iterator it = customItemPos_.find(name);
       if(it != customItemPos_.end()) { // the item has a custom position
         QPoint customPos = *it;
-        listView_->setPositionForIndex(customPos, index);
+        // center the contents vertically
+        listView_->setPositionForIndex(customPos + QPoint((grid.width() - itemWidth) / 2, 0), index);
         // qDebug() << "set custom pos:" << name << row << index << customPos;
         continue;
       }
@@ -490,18 +544,19 @@ void DesktopWindow::relayoutItems() {
         --row;
       }
       else {
-        listView_->setPositionForIndex(pos, index);
+        // center the contents vertically
+        listView_->setPositionForIndex(pos + QPoint((grid.width() - itemWidth) / 2, 0), index);
         // qDebug() << "set pos" << name << row << index << pos;
       }
       // move to next cell in the column
       pos.setY(pos.y() + grid.height() + listView_->spacing());
-      if(pos.y() + grid.height() > workArea.bottom()) {
+      if(pos.y() + grid.height() > workArea.bottom() + 1) {
         // if the next position may exceed the bottom of work area, go to the top of next column
         pos.setX(pos.x() + grid.width() + listView_->spacing());
         pos.setY(workArea.top());
 
         // check if the new column exceeds the right margin of work area
-        if(pos.x() + grid.width() > workArea.right()) {
+        if(pos.x() + grid.width() > workArea.right() + 1) {
           if(desktop->isVirtualDesktop()) {
             // in virtual desktop mode, go to next screen
             ++screen;
@@ -517,14 +572,46 @@ void DesktopWindow::relayoutItems() {
 
 void DesktopWindow::loadItemPositions() {
   // load custom item positions
+  customItemPos_.clear();
   Settings& settings = static_cast<Application*>(qApp)->settings();
   QString configFile = QString("%1/desktop-items-%2.conf").arg(settings.profileDir(settings.profileName())).arg(screenNum_);
   QSettings file(configFile, QSettings::IniFormat);
+  QSize grid = listView_->gridSize();
+  QRect workArea = qApp->desktop()->availableGeometry(screenNum_);
+  workArea.adjust(12, 12, -12, -12);
+  char* dektopPath = fm_path_to_str(fm_path_get_desktop());
+  QString desktopDir = QString(dektopPath) + QString("/");
+  g_free(dektopPath);
   Q_FOREACH(const QString& name, file.childGroups()) {
+    if(!QFile::exists(desktopDir + name.toUtf8())) {
+      // the file may have been removed from outside LXQT
+      continue;
+    }
     file.beginGroup(name);
     QVariant var = file.value("pos");
-    if(var.isValid())
-      customItemPos_[name.toUtf8()] = var.toPoint();
+    if(var.isValid()) {
+      QPoint customPos = var.toPoint();
+      if (customPos.x() >= workArea.x() && customPos.y() >= workArea.y()
+          && customPos.x() + listView_->gridSize().width() <= workArea.right() + 1
+          && customPos.y() + listView_->gridSize().height() <= workArea.bottom() + 1)
+      {
+        // correct positions that are't aligned to the grid
+        qreal w = qAbs((qreal)customPos.x() - (qreal)workArea.x())
+                  / (qreal)(grid.width() + listView_->spacing());
+        qreal h = qAbs(customPos.y() - (qreal)workArea.y())
+                  / (qreal)(grid.height() + listView_->spacing());
+        customPos.setX(workArea.x() + qRound(w) * (grid.width() + listView_->spacing()));
+        customPos.setY(workArea.y() + qRound(h) * (grid.height() + listView_->spacing()));
+        while(customItemPos_.values().contains(customPos)) {
+          customPos.setY(customPos.y() + grid.height() + listView_->spacing());
+          if(customPos.y() + grid.height() > workArea.bottom() + 1) {
+            customPos.setX(customPos.x() + grid.width() + listView_->spacing());
+            customPos.setY(workArea.top());
+          }
+        }
+        customItemPos_[name.toUtf8()] = customPos;
+      }
+    }
     file.endGroup();
   }
 }
@@ -575,6 +662,7 @@ void DesktopWindow::onStickToCurrentPos(bool toggled) {
 
 void DesktopWindow::queueRelayout(int delay) {
   // qDebug() << "queueRelayout";
+  removeBottomGap();
   if(!relayoutTimer_) {
     relayoutTimer_ = new QTimer();
     relayoutTimer_->setSingleShot(true);
@@ -799,3 +887,5 @@ void DesktopWindow::setScreenNum(int num) {
     queueRelayout();
   }
 }
+
+} // namespace PCManFM

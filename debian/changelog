@@ -1,3 +1,41 @@
+pcmanfm-qt (0.10.1-22-gc6cf50a-2) lxqt-snapshots; urgency=medium
+
+  * Added grep-patch and quilt temporary
+
+ -- Alf Gaida <agaida@siduction.org>  Sat, 20 Feb 2016 13:15:55 +0100
+
+pcmanfm-qt (0.10.1-22-gc6cf50a-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.10.1-22-gc6cf50a
+  * Deleted watch file
+  * Set source/format to 1.0
+  * Merge the latest changes from debian/sid
+  * Bump Standards to 3.9.7
+  * Added hardening=+all
+  * simplified debian/rules
+  * Added debian/get-new-snapshot
+
+ -- Alf Gaida <agaida@siduction.org>  Fri, 19 Feb 2016 18:31:36 +0100
+
+pcmanfm-qt (0.10.1-1) unstable; urgency=medium
+
+  * New upstream release.
+  * Remove libfm-qt as upstream moved it into another source repository.
+  * Remove dbg package in favor of dbgsym.
+  * Update Vcs-Browser.
+
+ -- ChangZhuo Chen (陳昌倬) <czchen@debian.org>  Sun, 07 Feb 2016 16:13:27 +0800
+
+pcmanfm-qt (0.10.0-2) unstable; urgency=medium
+
+  * Merge from experimental.
+  * New upstream release.
+  * Update minimum version of liblxqt.
+  * Update symbols.
+  * Remove menu file, see CTTE #741573.
+
+ -- ChangZhuo Chen (陳昌倬) <czchen@debian.org>  Sun, 15 Nov 2015 21:14:41 +0800
+
 pcmanfm-qt (0.10.0-1) unstable; urgency=medium
 
   * Cherry-picked upstream version 0.10.0.

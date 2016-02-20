@@ -39,10 +39,10 @@
 #include "applicationadaptor.h"
 #include "preferencesdialog.h"
 #include "desktoppreferencesdialog.h"
-#include "mountoperation.h"
+#include <libfm-qt/mountoperation.h>
 #include "autorundialog.h"
 #include "launcher.h"
-#include "filesearchdialog.h"
+#include <libfm-qt/filesearchdialog.h>
 
 #include <QScreen>
 #include <QWindow>
@@ -52,7 +52,8 @@
 #include "xdgdir.h"
 #include <QFileSystemWatcher>
 
-using namespace PCManFM;
+namespace PCManFM {
+
 static const char* serviceName = "org.pcmanfm.PCManFM";
 static const char* ifaceName = "org.pcmanfm.Application";
 
@@ -79,6 +80,8 @@ Application::Application(int& argc, char** argv):
 
   argc_ = argc;
   argv_ = argv;
+
+  setApplicationVersion(PCMANFM_QT_VERSION);
 
   // QDBusConnection::sessionBus().registerObject("/org/pcmanfm/Application", this);
   QDBusConnection dbus = QDBusConnection::sessionBus();
@@ -186,8 +189,7 @@ bool Application::parseCommandLineArgs() {
   QCommandLineOption setWallpaperOption(QStringList() << "w" << "set-wallpaper", tr("Set desktop wallpaper from image FILE"), tr("FILE"));
   parser.addOption(setWallpaperOption);
 
-  // don't translate list of modes in description, please
-  QCommandLineOption wallpaperModeOption("wallpaper-mode", tr("Set mode of desktop wallpaper. MODE=(color|stretch|fit|center|tile)"), tr("MODE"));
+  QCommandLineOption wallpaperModeOption("wallpaper-mode", tr("Set mode of desktop wallpaper. MODE=(%1)").arg("color|stretch|fit|center|tile"), tr("MODE"));
   parser.addOption(wallpaperModeOption);
 
   QCommandLineOption showPrefOption("show-pref", tr("Open Preferences dialog on the page with the specified name"), tr("NAME"));
@@ -338,7 +340,7 @@ void Application::onUserDirsChanged()
       }
     } else {
         qWarning("Application::onUserDirsChanged: %s doesn't exist",
-                    qUtf8Printable(userDesktopFolder_));
+                    userDesktopFolder_.toUtf8().constData());
     }
   }
 }
@@ -515,7 +517,7 @@ void Application::preferences(QString page) {
     preferencesDialog_ = new PreferencesDialog(page);
   }
   else {
-    // TODO: set page
+    preferencesDialog_.data()->selectPage(page);
   }
   preferencesDialog_.data()->show();
   preferencesDialog_.data()->raise();
@@ -820,7 +822,7 @@ void Application::installSigtermHandler() {
     struct sigaction action;
     action.sa_handler = sigtermHandler;
     ::sigemptyset(&action.sa_mask);
-    action.sa_flags |= SA_RESTART;
+    action.sa_flags = SA_RESTART;
     if(::sigaction(SIGTERM, &action, 0) != 0) {
       qWarning("Couldn't install SIGTERM handler");
     }
@@ -838,3 +840,5 @@ void Application::onSigtermNotified() {
     notifier->setEnabled(true);
   }
 }
+
+} // namespace PCManFM

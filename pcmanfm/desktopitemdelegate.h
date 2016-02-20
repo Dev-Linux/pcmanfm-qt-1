@@ -45,11 +45,18 @@ public:
   const QColor& shadowColor() const {
     return shadowColor_;
   }
+  void setMargins(QSize margins) {
+    margins_ = margins.expandedTo(QSize(0, 0));
+  }
+
+private:
+  void drawText(QPainter* painter, QStyleOptionViewItemV4& opt, QRectF& textRect) const;
 
 private:
   QListView* view_;
   QIcon symlinkIcon_;
   QColor shadowColor_;
+  QSize margins_;
 };
 
 }
