@@ -92,6 +92,9 @@
           <property name="clearButtonEnabled">
            <bool>true</bool>
           </property>
+          <property name="toolTip">
+           <string>Focus with Ctrl+I</string>
+          </property>
          </widget>
         </item>
        </layout>
@@ -167,6 +170,7 @@
     <addaction name="separator"/>
     <addaction name="menuSorting"/>
     <addaction name="actionFilter"/>
+    <addaction name="actionMenu_bar"/>
    </widget>
    <widget class="QMenu" name="menu_Editw">
     <property name="title">
@@ -636,6 +640,9 @@
    <property name="text">
     <string>&amp;Close Window</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+Q</string>
+   </property>
   </action>
   <action name="actionEdit_Bookmarks">
    <property name="text">
@@ -699,6 +706,9 @@
    <property name="text">
     <string>&amp;Filter</string>
    </property>
+   <property name="shortcut">
+    <string>Ctrl+B</string>
+   </property>
   </action>
   <action name="actionCloseLeft">
    <property name="icon">
@@ -721,6 +731,20 @@
   <action name="actionCloseOther">
    <property name="text">
     <string>Close &amp;other tabs</string>
+   </property>
+  </action>
+  <action name="actionMenu_bar">
+   <property name="checkable">
+    <bool>true</bool>
+   </property>
+   <property name="text">
+    <string>Menu bar</string>
+   </property>
+   <property name="toolTip">
+    <string>Menu bar</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+M</string>
    </property>
   </action>
  </widget>

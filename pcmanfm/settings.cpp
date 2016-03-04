@@ -79,6 +79,7 @@ Settings::Settings():
   lastWindowMaximized_(false),
   splitterPos_(120),
   sidePaneMode_(Fm::SidePane::ModePlaces),
+  showMenuBar_(true),
   viewMode_(Fm::FolderView::IconMode),
   showHidden_(false),
   sortOrder_(Qt::AscendingOrder),
@@ -106,7 +107,9 @@ Settings::Settings():
   bigIconSize_(48),
   smallIconSize_(24),
   sidePaneIconSize_(24),
-  thumbnailIconSize_(128) {
+  thumbnailIconSize_(128),
+  folderViewCellMargins_(QSize(3, 3)),
+  desktopCellMargins_(QSize(3, 1)) {
 }
 
 Settings::~Settings() {
@@ -201,6 +204,9 @@ bool Settings::loadFile(QString filePath) {
 
   desktopSortOrder_ = sortOrderFromString(settings.value("SortOrder").toString());
   desktopSortColumn_ = sortColumnFromString(settings.value("SortColumn").toString());
+
+  desktopCellMargins_ = (settings.value("DesktopCellMargins", QSize(3, 1)).toSize()
+                         .expandedTo(QSize(0, 0))).boundedTo(QSize(48, 48));
   settings.endGroup();
 
   settings.beginGroup("Volume");
@@ -233,6 +239,9 @@ bool Settings::loadFile(QString filePath) {
   smallIconSize_ = settings.value("SmallIconSize", 24).toInt();
   sidePaneIconSize_ = settings.value("SidePaneIconSize", 24).toInt();
   thumbnailIconSize_ = settings.value("ThumbnailIconSize", 128).toInt();
+
+  folderViewCellMargins_ = (settings.value("FolderViewCellMargins", QSize(3, 3)).toSize()
+                            .expandedTo(QSize(0, 0))).boundedTo(QSize(48, 48));
   settings.endGroup();
 
   settings.beginGroup("Places");
@@ -256,6 +265,7 @@ bool Settings::loadFile(QString filePath) {
   showTabClose_ = settings.value("ShowTabClose", true).toBool();
   splitterPos_ = settings.value("SplitterPos", 150).toInt();
   sidePaneMode_ = sidePaneModeFromString(settings.value("SidePaneMode").toString());
+  showMenuBar_ = settings.value("ShowMenuBar", true).toBool();
   settings.endGroup();
 
   return true;
@@ -302,6 +312,7 @@ bool Settings::saveFile(QString filePath) {
   settings.setValue("ShowHidden", desktopShowHidden_);
   settings.setValue("SortOrder", sortOrderToString(desktopSortOrder_));
   settings.setValue("SortColumn", sortColumnToString(desktopSortColumn_));
+  settings.setValue("DesktopCellMargins", desktopCellMargins_);
   settings.endGroup();
 
   settings.beginGroup("Volume");
@@ -334,6 +345,8 @@ bool Settings::saveFile(QString filePath) {
   settings.setValue("SmallIconSize", smallIconSize_);
   settings.setValue("SidePaneIconSize", sidePaneIconSize_);
   settings.setValue("ThumbnailIconSize", thumbnailIconSize_);
+
+  settings.setValue("FolderViewCellMargins", folderViewCellMargins_);
   settings.endGroup();
 
   settings.beginGroup("Places");
@@ -357,6 +370,7 @@ bool Settings::saveFile(QString filePath) {
   settings.setValue("ShowTabClose", showTabClose_);
   settings.setValue("SplitterPos", splitterPos_);
   settings.setValue("SidePaneMode", sidePaneModeToString(sidePaneMode_));
+  settings.setValue("ShowMenuBar", showMenuBar_);
   settings.endGroup();
   return true;
 }

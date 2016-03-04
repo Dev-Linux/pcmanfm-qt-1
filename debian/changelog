@@ -1,3 +1,12 @@
+pcmanfm-qt (0.10.1-33-gaaf86a4-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.10.1-33-gaaf86a4
+  * Pre 0.11.0
+  * Bump years in copyright
+  * Remove quilt and the grep patches, applied upstream  
+
+ -- Alf Gaida <agaida@siduction.org>  Fri, 04 Mar 2016 23:57:51 +0100
+
 pcmanfm-qt (0.10.1-22-gc6cf50a-2) lxqt-snapshots; urgency=medium
 
   * Added grep-patch and quilt temporary

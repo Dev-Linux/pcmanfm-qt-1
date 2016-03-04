@@ -18,8 +18,7 @@ Build-Depends: debhelper (>= 9.20151219),
                libx11-dev,
                pkg-config,
                qttools5-dev,
-               qttools5-dev-tools,
-               quilt
+               qttools5-dev-tools
 Standards-Version: 3.9.7
 Vcs-Browser: https://anonscm.debian.org/cgit/pkg-lxqt/pcmanfm-qt/?h=lxqt-snapshots/latest
 Vcs-Git: https://anonscm.debian.org/cgit/pkg-lxqt/pcmanfm-qt.git -b lxqt-snapshots/latest

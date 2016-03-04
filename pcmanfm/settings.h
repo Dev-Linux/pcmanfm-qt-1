@@ -306,6 +306,14 @@ public:
     sidePaneMode_ = sidePaneMode;
   }
 
+  bool showMenuBar() const {
+    return showMenuBar_;
+  }
+
+  void setShowMenuBar(bool showMenuBar) {
+    showMenuBar_ = showMenuBar;
+  }
+
   Fm::FolderView::ViewMode viewMode() const {
     return viewMode_;
   }
@@ -503,6 +511,23 @@ public:
     return thumbnailIconSize_;
   }
 
+  QSize folderViewCellMargins() const {
+    return folderViewCellMargins_;
+  }
+
+  void setFolderViewCellMargins(QSize size) {
+    folderViewCellMargins_ = size;
+  }
+
+  QSize desktopCellMargins() const {
+    return desktopCellMargins_;
+  }
+
+  void setDesktopCellMargins(QSize size) {
+    desktopCellMargins_ = size;
+  }
+
+
   bool showThumbnails() {
     return showThumbnails_;
   }
@@ -632,6 +657,7 @@ private:
   bool lastWindowMaximized_;
   int splitterPos_;
   Fm::SidePane::Mode sidePaneMode_;
+  bool showMenuBar_;
 
   Fm::FolderView::ViewMode viewMode_;
   bool showHidden_;
@@ -673,6 +699,9 @@ private:
   bool onlyUserTemplates_;
   bool templateTypeOnce_;
   bool templateRunApp_;
+
+  QSize folderViewCellMargins_;
+  QSize desktopCellMargins_;
 };
 
 }

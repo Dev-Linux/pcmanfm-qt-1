@@ -164,10 +164,19 @@ MainWindow::MainWindow(FmPath* path):
   group->addAction(ui.actionAscending);
   group->addAction(ui.actionDescending);
 
+  // Add menubar actions to the main window this is necessary so that actions
+  // shortcuts are still working when the menubar is hidden.
+  addActions(ui.menubar->actions());
+
+  // Show or hide the menu bar
+  ui.menubar->setVisible(settings.showMenuBar());
+  ui.actionMenu_bar->setChecked(settings.showMenuBar());
+  connect(ui.actionMenu_bar, &QAction::triggered, this, &MainWindow::toggleMenuBar);
+
   // create shortcuts
   QShortcut* shortcut;
-  shortcut = new QShortcut(QKeySequence::Quit, this);
-  connect(shortcut, &QShortcut::activated, this, &MainWindow::close);
+  shortcut = new QShortcut(QKeySequence(Qt::Key_Escape), this);
+  connect(shortcut, &QShortcut::activated, this, &MainWindow::onResetFocus);
 
   shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_L), this);
   connect(shortcut, &QShortcut::activated, this, &MainWindow::focusPathEntry);
@@ -204,6 +213,13 @@ MainWindow::MainWindow(FmPath* path):
 
   shortcut = new QShortcut(QKeySequence(Qt::SHIFT + Qt::Key_Delete), this);
   connect(shortcut, &QShortcut::activated, this, &MainWindow::on_actionDelete_triggered);
+
+  shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_I), this);
+  connect(shortcut, &QShortcut::activated, this, &MainWindow::focusFilterBar);
+
+  // in addition to F3, for convenience
+  shortcut = new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_F), this);
+  connect(shortcut, &QShortcut::activated, ui.actionFindFiles, &QAction::trigger);
 
   if(QToolButton* clearButton = ui.filterBar->findChild<QToolButton*>()) {
     clearButton->setToolTip(tr("Clear text (Ctrl+K)"));
@@ -258,6 +274,25 @@ void MainWindow::addTab(FmPath* path) {
   if(!settings.alwaysShowTabs()) {
     ui.tabBar->setVisible(ui.tabBar->count() > 1);
   }
+}
+
+void MainWindow::toggleMenuBar(bool checked) {
+  Settings& settings = static_cast<Application*>(qApp)->settings();
+  bool showMenuBar = !settings.showMenuBar();
+
+  if (!showMenuBar) {
+    if (QMessageBox::Cancel == QMessageBox::warning(this,
+          tr("Hide menu bar"),
+          tr("This will hide the menu bar completely, use Ctrl+M to show it again."),
+          QMessageBox::Ok | QMessageBox::Cancel)) {
+      ui.actionMenu_bar->setChecked(true);
+      return;
+    }
+  }
+
+  ui.menubar->setVisible(showMenuBar);
+  ui.actionMenu_bar->setChecked(showMenuBar);
+  settings.setShowMenuBar(showMenuBar);
 }
 
 void MainWindow::onPathEntryReturnPressed() {
@@ -421,6 +456,21 @@ void MainWindow::on_actionFolderFirst_triggered(bool checked) {
 
 void MainWindow::on_actionFilter_triggered(bool checked) {
   ui.filterBar->setVisible(checked);
+  if(checked)
+    ui.filterBar->setFocus();
+  else if(TabPage* tabPage = currentPage()) {
+    ui.filterBar->clear();
+    tabPage->folderView()->childView()->setFocus();
+    // clear filter string for all tabs
+    int n = ui.stackedWidget->count();
+    for(int i = 0; i < n; ++i) {
+      TabPage* page = static_cast<TabPage*>(ui.stackedWidget->widget(i));
+      if(!page->getFilterStr().isEmpty()) {
+        page->setFilterStr(QString());
+        page->applyFilter();
+      }
+    }
+  }
   static_cast<Application*>(qApp)->settings().setShowFilter(checked);
 }
 
@@ -502,6 +552,12 @@ void MainWindow::onTabBarCloseRequested(int index) {
   closeTab(index);
 }
 
+void MainWindow::onResetFocus() {
+  if(TabPage* page = currentPage()) {
+    currentPage()->folderView()->childView()->setFocus();
+  }
+}
+
 void MainWindow::onTabBarTabMoved(int from, int to) {
   // a tab in the tab bar is moved by the user, so we have to move the
   //  corredponding tab page in the stacked widget to the new position, too.
@@ -516,6 +572,13 @@ void MainWindow::onTabBarTabMoved(int from, int to) {
     ui.stackedWidget->blockSignals(false); // unblock signals
     ui.stackedWidget->setCurrentWidget(page);
   }
+}
+
+void MainWindow::focusFilterBar() {
+  if(!ui.filterBar->isVisible())
+    ui.actionFilter->trigger();
+  else
+    ui.filterBar->setFocus();
 }
 
 void MainWindow::onFilterStringChanged(QString str) {
@@ -973,10 +1036,7 @@ void MainWindow::updateFromSettings(Settings& settings) {
 
   // tabs
   ui.tabBar->setTabsClosable(settings.showTabClose());
-
-  if(!settings.alwaysShowTabs()) {
-    ui.tabBar->setVisible(ui.tabBar->count() > 1);
-  }
+  ui.tabBar->setVisible(settings.alwaysShowTabs() || (ui.tabBar->count() > 1));
 
   // all tab pages
   int n = ui.stackedWidget->count();

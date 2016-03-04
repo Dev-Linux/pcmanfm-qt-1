@@ -120,6 +120,7 @@ protected Q_SLOTS:
   void onTabBarCurrentChanged(int index);
   void onTabBarTabMoved(int from, int to);
 
+  void focusFilterBar();
   void onFilterStringChanged(QString str);
 
   void onShortcutPrevTab();
@@ -140,6 +141,7 @@ protected Q_SLOTS:
   void onSidePaneCreateNewFolderRequested(FmPath* path);
   void onSidePaneModeChanged(Fm::SidePane::Mode mode);
   void onSplitterMoved(int pos, int index);
+  void onResetFocus();
 
   void onBackForwardContextMenu(QPoint pos);
 
@@ -151,6 +153,7 @@ protected Q_SLOTS:
     closeRightTabs();
   }
   void focusPathEntry();
+  void toggleMenuBar(bool checked);
 
 protected:
   // void changeEvent( QEvent * event);
