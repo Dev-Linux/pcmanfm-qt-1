@@ -85,6 +85,10 @@ MainWindow::MainWindow(FmPath* path):
   ui.tabBar->setElideMode(Qt::ElideRight);
   ui.tabBar->setExpanding(false);
   ui.tabBar->setMovable(true); // reorder the tabs by dragging
+  if(!settings.fullWidthTabBar()) {
+    ui.verticalLayout->removeWidget(ui.tabBar);
+    ui.verticalLayout_2->insertWidget(0, ui.tabBar);
+  }
 
 #if QT_VERSION >= QT_VERSION_CHECK(5, 4, 0)
   // switch to the tab under the cursor during dnd.
@@ -169,6 +173,25 @@ MainWindow::MainWindow(FmPath* path):
   addActions(ui.menubar->actions());
 
   // Show or hide the menu bar
+  QMenu *menu = new QMenu();
+  menu->addMenu(ui.menu_File);
+  menu->addMenu(ui.menu_Editw);
+  menu->addMenu(ui.menu_View);
+  menu->addMenu(ui.menu_Go);
+  menu->addMenu(ui.menu_Bookmarks);
+  menu->addMenu(ui.menu_Tool);
+  menu->addMenu(ui.menu_Help);
+  ui.actionMenu->setMenu(menu);
+  if(ui.actionMenu->icon().isNull())
+    ui.actionMenu->setIcon(QIcon::fromTheme("applications-system"));
+  QList<QToolButton *> list = ui.toolBar->findChildren<QToolButton *>();
+  if (!list.isEmpty())
+    list.at(list.count() - 1)->setPopupMode(QToolButton::InstantPopup);
+  Q_FOREACH(QAction *action, ui.toolBar->actions()) {
+    if(action->isSeparator())
+      action->setVisible(!settings.showMenuBar());
+  }
+  ui.actionMenu->setVisible(!settings.showMenuBar());
   ui.menubar->setVisible(settings.showMenuBar());
   ui.actionMenu_bar->setChecked(settings.showMenuBar());
   connect(ui.actionMenu_bar, &QAction::triggered, this, &MainWindow::toggleMenuBar);
@@ -292,6 +315,11 @@ void MainWindow::toggleMenuBar(bool checked) {
 
   ui.menubar->setVisible(showMenuBar);
   ui.actionMenu_bar->setChecked(showMenuBar);
+  Q_FOREACH(QAction *action, ui.toolBar->actions()) {
+    if(action->isSeparator())
+      action->setVisible(!showMenuBar);
+  }
+  ui.actionMenu->setVisible(!showMenuBar);
   settings.setShowMenuBar(showMenuBar);
 }
 
@@ -1037,6 +1065,16 @@ void MainWindow::updateFromSettings(Settings& settings) {
   // tabs
   ui.tabBar->setTabsClosable(settings.showTabClose());
   ui.tabBar->setVisible(settings.alwaysShowTabs() || (ui.tabBar->count() > 1));
+  if(ui.verticalLayout->indexOf(ui.tabBar) > -1) {
+    if(!settings.fullWidthTabBar()) {
+      ui.verticalLayout->removeWidget(ui.tabBar);
+      ui.verticalLayout_2->insertWidget(0, ui.tabBar);
+    }
+  }
+  else if (ui.verticalLayout_2->indexOf(ui.tabBar) > -1 && settings.fullWidthTabBar()) {
+    ui.verticalLayout_2->removeWidget(ui.tabBar);
+    ui.verticalLayout->insertWidget(0, ui.tabBar);
+  }
 
   // all tab pages
   int n = ui.stackedWidget->count();

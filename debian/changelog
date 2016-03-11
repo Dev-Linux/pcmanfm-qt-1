@@ -1,3 +1,10 @@
+pcmanfm-qt (0.10.1-35-g262e93c-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.10.1-35-g262e93c
+  * Renamed debian/get-new-snapshot debian/get-snapshot
+
+ -- Alf Gaida <agaida@siduction.org>  Fri, 11 Mar 2016 22:55:24 +0100
+
 pcmanfm-qt (0.10.1-33-gaaf86a4-1) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.10.1-33-gaaf86a4
