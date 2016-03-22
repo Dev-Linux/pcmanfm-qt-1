@@ -1,13 +1,22 @@
 #!/bin/bash
 
-ls | grep -v "debian" |  xargs rm -r
+ls | grep -v "debian" | xargs rm -r
+rm -rf .pc
+
+unset BRANCH
+if [ -f debian/target ]; then
+    source debian/target
+    echo "target: $target"
+fi
+
 
 snapdir=$(mktemp -d)
 echo "$snapdir"
 pushd "$snapdir"
     git clone git@github.com:lxde/pcmanfm-qt snapshot
     pushd snapshot
-       description=$(git describe --always)
+       [  ! -z ${target+x} ] &&  git reset --hard "$target"
+       description=$(git describe --tags)
        rm -rf .git*
     popd
     tar cfvJ snapshot.orig.tar.xz snapshot
