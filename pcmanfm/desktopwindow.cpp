@@ -59,13 +59,13 @@ namespace PCManFM {
 
 DesktopWindow::DesktopWindow(int screenNum):
   View(Fm::FolderView::IconMode),
-  screenNum_(screenNum),
-  folder_(NULL),
-  model_(NULL),
   proxyModel_(NULL),
+  model_(NULL),
+  folder_(NULL),
+  wallpaperMode_(WallpaperNone),
   fileLauncher_(NULL),
   showWmMenu_(false),
-  wallpaperMode_(WallpaperNone),
+  screenNum_(screenNum),
   relayoutTimer_(NULL) {
 
   QDesktopWidget* desktopWidget = QApplication::desktop();
@@ -343,7 +343,7 @@ void DesktopWindow::updateFromSettings(Settings& settings) {
   setWallpaperFile(settings.wallpaper());
   setWallpaperMode(settings.wallpaperMode());
   setFont(settings.desktopFont());
-  setIconSize(Fm::FolderView::IconMode, QSize(settings.bigIconSize(), settings.bigIconSize()));
+  setIconSize(Fm::FolderView::IconMode, QSize(settings.desktopIconSize(), settings.desktopIconSize()));
   setMargins(settings.desktopCellMargins());
   // setIconSize and setMargins may trigger relayout of items by QListView, so we need to do the layout again.
   queueRelayout();
