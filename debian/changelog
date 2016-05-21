@@ -1,3 +1,11 @@
+pcmanfm-qt (0.11.1~8-gc03b4e9-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.11.0-8-gc03b4e9
+  * Fixed rules: Don't pull nor update translations
+  * Added new build dependency libkf5windowsystem-dev
+
+ -- Alf Gaida <agaida@siduction.org>  Sat, 21 May 2016 14:31:49 +0200
+
 pcmanfm-qt (0.11.1~7-g958a46d-1) lxqt-snapshots; urgency=medium
 
   * New virtual release 0.11.1~
