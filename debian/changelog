@@ -1,3 +1,11 @@
+pcmanfm-qt (0.11.1~11-g537bfc2-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.11.0-11-g537bfc2
+  * Fixed copyright format
+  * Fixed VCS-Fields, using plain /git/
+
+ -- Alf Gaida <agaida@siduction.org>  Tue, 12 Jul 2016 19:29:05 +0200
+
 pcmanfm-qt (0.11.1~10-gdc0967f-1) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.11.0-10-gdc0967f
