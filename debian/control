@@ -31,7 +31,7 @@ Package: pcmanfm-qt
 Architecture: any
 Depends: ${misc:Depends},
          ${shlibs:Depends},
-         dbus-x11,
+         default-dbus-session-bus | dbus-session-bus,
          libfm-modules
 Recommends: gvfs-backends,
             lxqt-sudo | gksu,

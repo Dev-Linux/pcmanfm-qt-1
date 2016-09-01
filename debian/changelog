@@ -1,8 +1,14 @@
-pcmanfm-qt (0.11.1~17-gab76319-1) UNRELEASED; urgency=medium
+pcmanfm-qt (0.11.1~17-gab76319-2) lxqt-snapshots; urgency=medium
+
+  * replace dependency dbus-x11 with default-dbus-session-bus | dbus-session-bus
+
+ -- Alf Gaida <agaida@siduction.org>  Thu, 01 Sep 2016 19:02:25 +0200
+
+pcmanfm-qt (0.11.1~17-gab76319-1) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.11.0-17-gab76319
 
- -- Alf Gaida <agaida@siduction.org>  Wed, 17 Aug 2016 17:58:31 +0200
+ -- Alf Gaida <agaida@siduction.org>  Wed, 17 Aug 2016 18:00:28 +0200
 
 pcmanfm-qt (0.11.1~16-g523739b-1) lxqt-snapshots; urgency=medium
 
