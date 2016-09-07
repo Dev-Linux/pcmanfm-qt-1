@@ -1,3 +1,9 @@
+pcmanfm-qt (0.11.1~23-g66463c9-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.11.0-23-g66463c9
+
+ -- Alf Gaida <agaida@siduction.org>  Wed, 07 Sep 2016 22:02:29 +0200
+
 pcmanfm-qt (0.11.1~22-gd1d8e9f-1) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.11.0-22-gd1d8e9f
