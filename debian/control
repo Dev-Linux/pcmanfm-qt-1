@@ -13,12 +13,11 @@ Build-Depends: debhelper (>= 10),
                libfm-qt-dev (>= 0.11.1),
                libglib2.0-dev,
                libkf5windowsystem-dev,
-               liblxqt0-dev (>= 0.11.0),
                libmenu-cache-dev,
                libqt5svg5-dev,
                libqt5x11extras5-dev,
-               libqt5xdg-dev (>= 2.0.0),
                libx11-dev,
+               lxqt-build-tools (>= 0.1.0~),
                pkg-config,
                qttools5-dev,
                qttools5-dev-tools
@@ -35,7 +34,7 @@ Depends: ${misc:Depends},
          libfm-modules
 Recommends: gvfs-backends,
             lxqt-sudo | gksu,
-            breeze-icon-theme | oyxgen-icon-theme | faenza-icon-theme | gnome-icon-theme,
+            breeze-icon-theme | oxygen-icon-theme | faenza-icon-theme | gnome-icon-theme,
             pcmanfm-qt-l10n
 Description: extremely fast and lightweight file and desktop icon manager
  PCManFM-Qt is the Qt port of the LXDE file manager PCManFM.

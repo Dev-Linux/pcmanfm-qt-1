@@ -8,9 +8,9 @@ rm -rf .pc
 
 if [ -f debian/commit ]; then
     source debian/commit
-    [ ! -z ${branch} ] && echo "branch: ${branch}"
-    [ ! -z ${commit} ] && echo "commit: ${commit}"
-    [ ! -z ${target_dir} ] && echo "target_dir: ${target_dir}"
+    [ ! -z "${branch}" ] && echo "branch: ${branch}"
+    [ ! -z "${commit}" ] && echo "commit: ${commit}"
+    [ ! -z "${target_dir}" ] && echo "target_dir: ${target_dir}"
 fi
 
 snapdir=$(mktemp -d)
@@ -19,7 +19,7 @@ pushd "$snapdir"
     echo "git clone ${branch} ${repository} ${target_dir}"
     git clone ${branch} ${repository} ${target_dir}
     pushd snapshot
-        [  ! -z ${target} ] &&  git reset --hard "$target"
+        [  ! -z "${target}" ] &&  git reset --hard "$target"
         description=$(git describe --tags)
         rm -rf .git*
     popd
