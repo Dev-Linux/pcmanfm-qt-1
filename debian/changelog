@@ -1,11 +1,15 @@
-pcmanfm-qt (0.11.2~3-gb4d7471-1) lxqt-snapshots; urgency=medium
+pcmanfm-qt (0.11.2~3-gb4d7471-2) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.11.1-3-gb4d7471
-  * Removed build dependency liblxqt0-dev
-  * Removed build dependency libqt5xdg-dev
+  * Removed build dependencies
+    - liblxqt0-dev
+    - libqt5xdg-dev
+    - pkg-config,
+    - qttools5-dev,
+    - qttools5-dev-tools
   * Added build dependency lxqt-build-tools 
 
- -- Alf Gaida <agaida@siduction.org>  Fri, 07 Oct 2016 18:25:22 +0200
+ -- Alf Gaida <agaida@siduction.org>  Sat, 15 Oct 2016 17:32:59 +0200
 
 pcmanfm-qt (0.11.2~2-g52183fa-1) lxqt-snapshots; urgency=medium
 
