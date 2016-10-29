@@ -10,7 +10,7 @@ Priority: optional
 Build-Depends: debhelper (>= 10),
                cmake (>= 3.0.2),
                libfm-dev (>= 1.2.0),
-               libfm-qt-dev (>= 0.11.1),
+               libfm-qt-dev (>= 0.11.2~),
                libglib2.0-dev,
                libkf5windowsystem-dev,
                libmenu-cache-dev,
@@ -28,11 +28,14 @@ Architecture: any
 Depends: ${misc:Depends},
          ${shlibs:Depends},
          default-dbus-session-bus | dbus-session-bus,
-         libfm-modules
-Recommends: gvfs-backends,
+         libfm-modules,
+         libfm-qt3 (>= 0.11.2~) 
+Recommends: eject,
+            gvfs-backends,
             lxqt-sudo | gksu,
             breeze-icon-theme | oxygen-icon-theme | faenza-icon-theme | gnome-icon-theme,
             pcmanfm-qt-l10n
+Suggests: cdtool
 Description: extremely fast and lightweight file and desktop icon manager
  PCManFM-Qt is the Qt port of the LXDE file manager PCManFM.
  .
