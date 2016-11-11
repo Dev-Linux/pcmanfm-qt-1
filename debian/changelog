@@ -1,3 +1,9 @@
+pcmanfm-qt (0.11.2~9-g40b4622-2) lxqt-snapshots; urgency=medium
+
+  * Suggests: cdtool [linux-any]
+
+ -- Alf Gaida <agaida@siduction.org>  Fri, 11 Nov 2016 18:32:58 +0100
+
 pcmanfm-qt (0.11.2~9-g40b4622-1) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.11.1-9-g40b4622
