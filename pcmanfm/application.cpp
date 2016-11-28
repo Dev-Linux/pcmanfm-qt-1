@@ -33,26 +33,28 @@
 #include <QMessageBox>
 #include <QCommandLineParser>
 #include <QSocketNotifier>
+#include <QScreen>
+#include <QWindow>
+#include <QFileSystemWatcher>
+
 #include <gio/gio.h>
 #include <sys/socket.h>
 
-#include "applicationadaptor.h"
-#include "preferencesdialog.h"
-#include "desktoppreferencesdialog.h"
 #include <libfm-qt/mountoperation.h>
-#include "autorundialog.h"
-#include "launcher.h"
 #include <libfm-qt/filesearchdialog.h>
 #include <libfm-qt/path.h>
 #include <libfm-qt/terminal.h>
 
-#include <QScreen>
-#include <QWindow>
+#include "applicationadaptor.h"
+#include "preferencesdialog.h"
+#include "desktoppreferencesdialog.h"
+#include "autorundialog.h"
+#include "launcher.h"
+#include "xdgdir.h"
+#include "connectserverdialog.h"
 
 #include <X11/Xlib.h>
 
-#include "xdgdir.h"
-#include <QFileSystemWatcher>
 
 namespace PCManFM {
 
@@ -191,7 +193,7 @@ bool Application::parseCommandLineArgs() {
   QCommandLineOption setWallpaperOption(QStringList() << "w" << "set-wallpaper", tr("Set desktop wallpaper from image FILE"), tr("FILE"));
   parser.addOption(setWallpaperOption);
 
-  QCommandLineOption wallpaperModeOption("wallpaper-mode", tr("Set mode of desktop wallpaper. MODE=(%1)").arg("color|stretch|fit|center|tile"), tr("MODE"));
+  QCommandLineOption wallpaperModeOption("wallpaper-mode", tr("Set mode of desktop wallpaper. MODE=(%1)").arg("color|stretch|fit|center|tile|zoom"), tr("MODE"));
   parser.addOption(wallpaperModeOption);
 
   QCommandLineOption showPrefOption("show-pref", tr("Open Preferences dialog on the page with the specified name"), tr("NAME"));
@@ -440,16 +442,34 @@ void Application::desktopPrefrences(QString page) {
 void Application::onFindFileAccepted() {
   Fm::FileSearchDialog* dlg = static_cast<Fm::FileSearchDialog*>(sender());
   Fm::Path uri = dlg->searchUri();
-  // FIXME: we should be able to open it in an existing window
   Fm::PathList paths;
   paths.pushTail(uri);
-  Launcher(NULL).launchPaths(NULL, paths);
+  MainWindow* window = MainWindow::lastActive();
+  Launcher(window).launchPaths(NULL, paths);
+}
+
+void Application::onConnectToServerAccepted() {
+  ConnectServerDialog* dlg = static_cast<ConnectServerDialog*>(sender());
+  QString uri = dlg->uriText();
+  Fm::Path path = Fm::Path::newForStr(uri.toUtf8().constData());
+  qDebug() << uri << " => " << path.toStr();
+  Fm::PathList paths;
+  paths.pushTail(path);
+  MainWindow* window = MainWindow::lastActive();
+  Launcher(window).launchPaths(NULL, paths);
 }
 
 void Application::findFiles(QStringList paths) {
   // launch file searching utility.
   Fm::FileSearchDialog* dlg = new Fm::FileSearchDialog(paths);
   connect(dlg, &QDialog::accepted, this, &Application::onFindFileAccepted);
+  dlg->setAttribute(Qt::WA_DeleteOnClose);
+  dlg->show();
+}
+
+void Application::connectToServer() {
+  ConnectServerDialog* dlg = new ConnectServerDialog();
+  connect(dlg, &QDialog::accepted, this, &Application::onConnectToServerAccepted);
   dlg->setAttribute(Qt::WA_DeleteOnClose);
   dlg->show();
 }

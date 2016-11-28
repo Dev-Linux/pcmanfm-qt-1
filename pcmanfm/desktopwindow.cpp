@@ -306,12 +306,13 @@ void DesktopWindow::updateWallpaper() {
       if(wallpaperMode_ == WallpaperCenter) {
         image = QImage(wallpaperFile_); // load original image
       }
-      else if(wallpaperMode_ == WallpaperFit) {
+      else if(wallpaperMode_ == WallpaperFit || wallpaperMode_ == WallpaperZoom) {
         // calculate the desired size
         QSize origSize = QImageReader(wallpaperFile_).size(); // get the size of the original file
         if(origSize.isValid()) {
           QSize desiredSize = origSize;
-          desiredSize.scale(width(), height(), Qt::KeepAspectRatio);
+          Qt::AspectRatioMode mode = (wallpaperMode_ == WallpaperFit ? Qt::KeepAspectRatio : Qt::KeepAspectRatioByExpanding);
+          desiredSize.scale(width(), height(), mode);
           image = loadWallpaperFile(desiredSize); // load the scaled image
         }
       }
