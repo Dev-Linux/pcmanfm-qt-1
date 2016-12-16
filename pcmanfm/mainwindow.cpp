@@ -203,10 +203,8 @@ MainWindow::MainWindow(Path path):
   QToolButton* menuBtn = static_cast<QToolButton*>(ui.toolBar->widgetForAction(ui.actionMenu));
   menuBtn->setPopupMode(QToolButton::InstantPopup);
 
-  Q_FOREACH(QAction *action, ui.toolBar->actions()) {
-    if(action->isSeparator())
-      action->setVisible(!settings.showMenuBar());
-  }
+  menuSep_ = ui.toolBar->insertSeparator(ui.actionMenu);
+  menuSep_->setVisible(!settings.showMenuBar());
   ui.actionMenu->setVisible(!settings.showMenuBar());
   ui.menubar->setVisible(settings.showMenuBar());
   ui.actionMenu_bar->setChecked(settings.showMenuBar());
@@ -301,6 +299,7 @@ void MainWindow::createPathBar(bool usePathButtons) {
   if(usePathButtons) {
     bar = pathBar_ = new Fm::PathBar(this);
     connect(pathBar_, &Fm::PathBar::chdir, this, &MainWindow::onPathBarChdir);
+    connect(pathBar_, &Fm::PathBar::middleClickChdir, this, &MainWindow::onPathBarMiddleClickChdir);
     connect(pathBar_, &Fm::PathBar::editingFinished, this, &MainWindow::onResetFocus);
   }
   else {
@@ -351,10 +350,7 @@ void MainWindow::toggleMenuBar(bool checked) {
 
   ui.menubar->setVisible(showMenuBar);
   ui.actionMenu_bar->setChecked(showMenuBar);
-  Q_FOREACH(QAction *action, ui.toolBar->actions()) {
-    if(action->isSeparator())
-      action->setVisible(!showMenuBar);
-  }
+  menuSep_->setVisible(!showMenuBar);
   ui.actionMenu->setVisible(!showMenuBar);
   settings.setShowMenuBar(showMenuBar);
 }
@@ -375,6 +371,10 @@ void MainWindow::onPathEntryEdited(const QString& text) {
 
 void MainWindow::onPathBarChdir(FmPath* dirPath) {
   chdir(dirPath);
+}
+
+void MainWindow::onPathBarMiddleClickChdir(FmPath* dirPath) {
+  addTab(dirPath);
 }
 
 void MainWindow::on_actionGoUp_triggered() {
