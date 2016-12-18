@@ -1,3 +1,9 @@
+pcmanfm-qt (0.11.2~28-g635041a-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.11.1-28-g635041a
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 18 Dec 2016 23:09:50 +0100
+
 pcmanfm-qt (0.11.2~27-gc05f734-2) lxqt-snapshots; urgency=medium
 
   * Added pr423.patch
