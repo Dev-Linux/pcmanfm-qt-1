@@ -90,7 +90,7 @@ void PreferencesDialog::initIconThemes(Settings& settings) {
 
     iconThemes.remove("hicolor"); // remove hicolor, which is only a fallback
     QHash<QString, QString>::const_iterator it;
-    for(it = iconThemes.begin(); it != iconThemes.end(); ++it) {
+    for(it = iconThemes.constBegin(); it != iconThemes.constEnd(); ++it) {
       ui.iconTheme->addItem(it.value(), it.key());
     }
     ui.iconTheme->model()->sort(0); // sort the list of icon theme names
@@ -132,14 +132,13 @@ void PreferencesDialog::initArchivers(Settings& settings) {
 void PreferencesDialog::initDisplayPage(Settings& settings) {
     initIconThemes(settings);
     // icon sizes
-    int i;
-    for(i = 0; i < G_N_ELEMENTS(bigIconSizes); ++i) {
+    for(std::size_t i = 0; i < G_N_ELEMENTS(bigIconSizes); ++i) {
       int size = bigIconSizes[i];
       ui.bigIconSize->addItem(QString("%1 x %1").arg(size), size);
       if(settings.bigIconSize() == size)
         ui.bigIconSize->setCurrentIndex(i);
     }
-    for(i = 0; i < G_N_ELEMENTS(smallIconSizes); ++i) {
+    for(std::size_t i = 0; i < G_N_ELEMENTS(smallIconSizes); ++i) {
       int size = smallIconSizes[i];
       QString text = QString("%1 x %1").arg(size);
       ui.smallIconSize->addItem(text, size);
@@ -150,7 +149,7 @@ void PreferencesDialog::initDisplayPage(Settings& settings) {
       if(settings.sidePaneIconSize() == size)
         ui.sidePaneIconSize->setCurrentIndex(i);
     }
-    for(i = 0; i < G_N_ELEMENTS(thumbnailIconSizes); ++i) {
+    for(std::size_t i = 0; i < G_N_ELEMENTS(thumbnailIconSizes); ++i) {
       int size = thumbnailIconSizes[i];
       ui.thumbnailIconSize->addItem(QString("%1 x %1").arg(size), size);
       if(settings.thumbnailIconSize() == size)
@@ -196,7 +195,7 @@ void PreferencesDialog::initBehaviorPage(Settings& settings) {
     Fm::FolderView::ThumbnailMode,
     Fm::FolderView::DetailedListMode
   };
-  for(int i = 0; i < G_N_ELEMENTS(modes); ++i) {
+  for(std::size_t i = 0; i < G_N_ELEMENTS(modes); ++i) {
     if(modes[i] == settings.viewMode()) {
       ui.viewMode->setCurrentIndex(i);
       break;

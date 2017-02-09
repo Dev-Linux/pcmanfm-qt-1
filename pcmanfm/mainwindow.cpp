@@ -370,7 +370,11 @@ void MainWindow::onPathEntryEdited(const QString& text) {
 }
 
 void MainWindow::onPathBarChdir(FmPath* dirPath) {
-  chdir(dirPath);
+  // call chdir() only when needed because otherwise
+  // filter bar will be cleard on changing current tab
+  TabPage* page = currentPage();
+  if(page && dirPath != page->path())
+    chdir(dirPath);
 }
 
 void MainWindow::onPathBarMiddleClickChdir(FmPath* dirPath) {
@@ -966,8 +970,17 @@ void MainWindow::loadBookmarksMenu() {
 void MainWindow::onBookmarksChanged(FmBookmarks* bookmarks, MainWindow* pThis) {
   // delete existing items
   QList<QAction*> actions = pThis->ui.menu_Bookmarks->actions();
-  QList<QAction*>::const_iterator it = actions.begin();
-  QList<QAction*>::const_iterator last_it = actions.end() - 2;
+  // there are 2 items after the separator on the bookmarks menu.
+  // loadBookmarksMenu() will add the separator too.
+  QList<QAction*>::const_iterator it = actions.constBegin();
+  QList<QAction*>::const_iterator last_it = actions.constEnd() - 2;
+
+  // Check for an invalid last_it.
+  Q_ASSERT(it <= last_it);
+  if (it > last_it) {
+    qWarning() << Q_FUNC_INFO << QString::fromLatin1("Warning: it > last_it");
+    return;
+  }
 
   while(it != last_it) {
     QAction* action = *it;
