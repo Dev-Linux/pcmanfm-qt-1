@@ -34,6 +34,8 @@ Recommends: eject,
             oxygen-icon-theme | breeze-icon-theme | faenza-icon-theme | gnome-icon-theme,
             pcmanfm-qt-l10n
 Suggests: cdtool [linux-any]
+Breaks: lxqt-common (<< 0.11.4)
+Replaces: lxqt-common (<< 0.11.4)
 Description: extremely fast and lightweight file and desktop icon manager
  PCManFM-Qt is the Qt port of the LXDE file manager PCManFM.
  .

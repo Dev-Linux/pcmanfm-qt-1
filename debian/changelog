@@ -1,3 +1,31 @@
+pcmanfm-qt (0.11.4~16-ge33db4a-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.11.3-16-ge33db4a
+  * switched to branch pcman@libfm-c++11-port, leave alone 
+    merge-lxqt-common
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 09 Apr 2017 19:25:50 +0200
+
+pcmanfm-qt (0.11.4~3-g8854165-4) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.11.3-37-gab00b84
+  * switched to merge-lxqt-common
+  * Added breaks and replaces
+
+ -- Alf Gaida <agaida@siduction.org>  Mon, 27 Mar 2017 01:17:49 +0200
+
+pcmanfm-qt (0.11.4~3-g8854165-3) lxqt-snapshots; urgency=medium
+
+  * Included LXQTConfigVars 
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 26 Mar 2017 04:38:30 +0200
+
+pcmanfm-qt (0.11.4~3-g8854165-2) lxqt-snapshots; urgency=medium
+
+  * Merge some files from lxqt-common
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 26 Mar 2017 00:34:07 +0100
+
 pcmanfm-qt (0.11.4~3-g8854165-1) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.11.3-3-g8854165
