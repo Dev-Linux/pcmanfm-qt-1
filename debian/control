@@ -8,6 +8,7 @@ Uploaders: Alf Gaida <agaida@siduction.org>,
 Section: x11
 Priority: optional
 Build-Depends: debhelper (>= 10),
+               libexif-dev,
                libfm-qt-dev (>= 0.11.2),
                libglib2.0-dev,
                libkf5windowsystem-dev,
