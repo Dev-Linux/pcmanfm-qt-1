@@ -1,3 +1,9 @@
+pcmanfm-qt (0.11.4~21-g42fa495-2) lxqt-snapshots; urgency=medium
+
+  * Added patch 483 - Use const iterators 
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 23 Apr 2017 16:24:25 +0200
+
 pcmanfm-qt (0.11.4~21-g42fa495-1) lxqt-snapshots; urgency=medium
 
   * back to master
