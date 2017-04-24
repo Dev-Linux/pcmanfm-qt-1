@@ -1,3 +1,10 @@
+pcmanfm-qt (0.11.4~22-g015909c-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.11.3-22-g015909c
+  * Deleted patch 483  - applied upstream
+
+ -- Alf Gaida <agaida@siduction.org>  Mon, 24 Apr 2017 17:09:34 +0200
+
 pcmanfm-qt (0.11.4~21-g42fa495-2) lxqt-snapshots; urgency=medium
 
   * Added patch 483 - Use const iterators 
