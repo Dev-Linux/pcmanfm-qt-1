@@ -26,6 +26,7 @@ message(STATUS "Building ${PROJECT_NAME} with Qt ${Qt5Core_VERSION_STRING}")
 
 option(UPDATE_TRANSLATIONS "Update source translation translations/*.ts files" OFF)
 include(GNUInstallDirs)
+include(LXQtConfigVars)
 include(LXQtTranslateTs)
 include(LXQtTranslateDesktop)
 include(LXQtCompilerSettings NO_POLICY_SCOPE)
@@ -61,3 +62,7 @@ if(BUILD_DOCUMENTATION)
     )
     install(DIRECTORY "${CMAKE_CURRENT_BINARY_DIR}/docs" DESTINATION "${CMAKE_INSTALL_DOCDIR}")
 endif()
+
+# merged from lxqt-common
+add_subdirectory(autostart)
+add_subdirectory(config)
