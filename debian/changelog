@@ -1,3 +1,9 @@
+pcmanfm-qt (0.11.4~54-g2f78ece-3) lxqt-snapshots; urgency=medium
+
+  * Added patch 496 - desktop icons custom position
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 30 Apr 2017 16:42:26 +0200
+
 pcmanfm-qt (0.11.4~54-g2f78ece-2) lxqt-snapshots; urgency=medium
 
   * Rebuild with unfucked libfm-qt symbols

@@ -1,0 +1,24 @@
+From 3107f7cd7e9466b30b2fb090d785ae09668c6877 Mon Sep 17 00:00:00 2001
+From: Tsu Jan <tsujan2000@gmail.com>
+Date: Sun, 30 Apr 2017 19:08:23 +0430
+Subject: [PATCH] Fix crash on removing desktop items with custom position
+
+Fixes https://github.com/lxde/pcmanfm-qt/issues/495.
+---
+ pcmanfm/desktopwindow.cpp | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/pcmanfm/desktopwindow.cpp b/pcmanfm/desktopwindow.cpp
+index 2826a50..5ab7441 100644
+--- a/pcmanfm/desktopwindow.cpp
++++ b/pcmanfm/desktopwindow.cpp
+@@ -428,7 +428,7 @@ void DesktopWindow::onRowsAboutToBeRemoved(const QModelIndex& parent, int start,
+         for(auto it = customItemPos_.cbegin(); it != customItemPos_.cend(); ++it) {
+             auto& name = it->first;
+             if(!QFile::exists(desktopDir + QString::fromStdString(name))) {
+-                customItemPos_.erase(it);
++                it = customItemPos_.erase(it);
+                 changed = true;
+             }
+         }
+
