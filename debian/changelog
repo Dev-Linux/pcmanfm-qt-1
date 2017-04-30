@@ -1,3 +1,9 @@
+pcmanfm-qt (0.11.4~54-g2f78ece-2) lxqt-snapshots; urgency=medium
+
+  * Rebuild with unfucked libfm-qt symbols
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 30 Apr 2017 15:23:38 +0200
+
 pcmanfm-qt (0.11.4~54-g2f78ece-1) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.11.3-54-g2f78ece
