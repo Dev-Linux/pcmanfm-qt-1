@@ -1,3 +1,16 @@
+cmanfm-qt (0.11.4~55-g925541c-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.11.3-55-g925541c
+  * Removed patch 496, applied upstream 
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 30 Apr 2017 20:10:14 +0200
+
+pcmanfm-qt (0.11.4~54-g2f78ece-4) lxqt-snapshots; urgency=medium
+
+  * Improved patch 496 
+
+ -- Alf Gaida <agaida@siduction.org>  Sun, 30 Apr 2017 18:44:32 +0200
+
 pcmanfm-qt (0.11.4~54-g2f78ece-3) lxqt-snapshots; urgency=medium
 
   * Added patch 496 - desktop icons custom position
