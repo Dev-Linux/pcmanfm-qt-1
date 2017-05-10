@@ -1,4 +1,24 @@
-cmanfm-qt (0.11.4~55-g925541c-1) lxqt-snapshots; urgency=medium
+pcmanfm-qt (0.11.4~57-g5fc0c7e-1) lxqt-snapshots; urgency=medium
+
+  * New snapshot: 0.11.3-57-g5fc0c7e
+  * Removed PR 504 - applied upstream
+  * Removed PR 499 - applied upstream
+
+ -- Alf Gaida <agaida@siduction.org>  Wed, 10 May 2017 23:50:55 +0200
+
+pcmanfm-qt (0.11.4~55-g925541c-3) lxqt-snapshots; urgency=medium
+
+  * Added pull request 504 
+
+ -- Alf Gaida <agaida@siduction.org>  Tue, 09 May 2017 23:48:46 +0200
+
+pcmanfm-qt (0.11.4~55-g925541c-2) lxqt-snapshots; urgency=medium
+
+  * Added pull request 499 
+
+ -- Alf Gaida <agaida@siduction.org>  Tue, 09 May 2017 22:56:17 +0200
+
+pcmanfm-qt (0.11.4~55-g925541c-1) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.11.3-55-g925541c
   * Removed patch 496, applied upstream 

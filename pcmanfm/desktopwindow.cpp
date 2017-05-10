@@ -193,6 +193,7 @@ void DesktopWindow::setShadow(const QColor& color) {
 }
 
 void DesktopWindow::onOpenDirRequested(const Fm::FilePath& path, int target) {
+    Q_UNUSED(target);
     // open in new window unconditionally.
     Application* app = static_cast<Application*>(qApp);
     MainWindow* newWin = new MainWindow(path);
@@ -384,15 +385,15 @@ void DesktopWindow::prepareFileMenu(Fm::FileMenu* menu) {
     menu->insertSeparator(menu->separator2());
     menu->insertAction(menu->separator2(), action);
 
+    bool checked(true);
     auto files = menu->files();
-    // select exactly one item
-    if(files.size() == 1) {
-        auto file = menu->firstFile();
-        if(customItemPos_.find(file->name()) != customItemPos_.cend()) {
-            // the file item has a custom position
-            action->setChecked(true);
+    for(const auto& file : files) {
+        if(customItemPos_.find(file->name()) == customItemPos_.cend()) {
+            checked = false;
+            break;
         }
     }
+    action->setChecked(checked);
     connect(action, &QAction::toggled, this, &DesktopWindow::onStickToCurrentPos);
 }
 
@@ -410,6 +411,9 @@ void DesktopWindow::onDesktopPreferences() {
 }
 
 void DesktopWindow::onRowsInserted(const QModelIndex& parent, int start, int end) {
+    Q_UNUSED(parent);
+    Q_UNUSED(start);
+    Q_UNUSED(end);
     queueRelayout();
 }
 
@@ -689,12 +693,7 @@ void DesktopWindow::loadItemPositions() {
                     && customPos.x() + listView_->gridSize().width() <= workArea.right() + 1
                     && customPos.y() + listView_->gridSize().height() <= workArea.bottom() + 1) {
                 // correct positions that are't aligned to the grid
-                qreal w = qAbs((qreal)customPos.x() - (qreal)workArea.x())
-                          / (qreal)(grid.width() + listView_->spacing());
-                qreal h = qAbs(customPos.y() - (qreal)workArea.y())
-                          / (qreal)(grid.height() + listView_->spacing());
-                customPos.setX(workArea.x() + qRound(w) * (grid.width() + listView_->spacing()));
-                customPos.setY(workArea.y() + qRound(h) * (grid.height() + listView_->spacing()));
+                alignToGrid(customPos, workArea.topLeft(), grid, listView_->spacing());
                 // FIXME: this is very inefficient
                 while(std::find(usedPos.cbegin(), usedPos.cend(), customPos) != usedPos.cend()) {
                     customPos.setY(customPos.y() + grid.height() + listView_->spacing());
@@ -730,26 +729,28 @@ void DesktopWindow::saveItemPositions() {
 }
 
 void DesktopWindow::onStickToCurrentPos(bool toggled) {
-    QAction* action = static_cast<QAction*>(sender());
-    Fm::FileMenu* menu = static_cast<Fm::FileMenu*>(action->parent());
-
     QModelIndexList indexes = listView_->selectionModel()->selectedIndexes();
     if(!indexes.isEmpty()) {
-        auto file = menu->firstFile();
-        auto name = file->name();
-        QModelIndex index = indexes.first();
-        if(toggled) { // remember to current custom position
-            QRect itemRect = listView_->rectForIndex(index);
-            customItemPos_[name] = itemRect.topLeft();
-            saveItemPositions();
-        }
-        else { // cancel custom position and perform relayout
-            auto it = customItemPos_.find(name);
-            if(it != customItemPos_.end()) {
-                customItemPos_.erase(it);
-                saveItemPositions();
-                relayoutItems();
+        bool relayout(false);
+        QModelIndexList::const_iterator it;
+        for(it = indexes.constBegin(); it != indexes.constEnd(); ++it) {
+            auto file = proxyModel_->fileInfoFromIndex(*it);
+            auto name = file->name();
+            if(toggled) { // remember the current custom position
+                QRect itemRect = listView_->rectForIndex(*it);
+                customItemPos_[name] = itemRect.topLeft();
             }
+            else { // cancel custom position and perform relayout
+                auto item = customItemPos_.find(name);
+                if(item != customItemPos_.end()) {
+                    customItemPos_.erase(item);
+                    relayout = true;
+                }
+            }
+        }
+        saveItemPositions();
+        if(relayout) {
+            relayoutItems();
         }
     }
 }
@@ -955,11 +956,11 @@ bool DesktopWindow::eventFilter(QObject* watched, QEvent* event) {
 }
 
 void DesktopWindow::childDropEvent(QDropEvent* e) {
+    const QMimeData* mimeData = e->mimeData();
     bool moveItem = false;
     if(e->source() == listView_ && e->keyboardModifiers() == Qt::NoModifier) {
         // drag source is our list view, and no other modifier keys are pressed
         // => we're dragging desktop items
-        const QMimeData* mimeData = e->mimeData();
         if(mimeData->hasFormat("application/x-qabstractitemmodeldatalist")) {
             QModelIndex dropIndex = listView_->indexAt(e->pos());
             if(dropIndex.isValid()) { // drop on an item
@@ -978,7 +979,44 @@ void DesktopWindow::childDropEvent(QDropEvent* e) {
     }
     else {
         Fm::FolderView::childDropEvent(e);
+        // position dropped items successively, starting with the drop rectangle
+        if(mimeData->hasUrls()
+           && (e->dropAction() == Qt::CopyAction
+               || e->dropAction() == Qt::MoveAction
+               || e->dropAction() == Qt::LinkAction)) {
+            QList<QUrl> urlList = mimeData->urls();
+            for(int i = 0; i < urlList.count(); ++i) {
+                std::string name = urlList.at(i).fileName().toUtf8().constData();
+                if(!name.empty()) { // respect the positions of existing files
+                    QString desktopDir = XdgDir::readDesktopDir() + QString(QLatin1String("/"));
+                    if(!QFile::exists(desktopDir + QString::fromStdString(name))) {
+                        QSize grid = listView_->gridSize();
+                        QRect workArea = qApp->desktop()->availableGeometry(screenNum_);
+                        workArea.adjust(12, 12, -12, -12);
+                        QPoint pos = mapFromGlobal(e->pos());
+                        alignToGrid(pos, workArea.topLeft(), grid, listView_->spacing());
+                        if(i > 0)
+                            pos.setY(pos.y() + grid.height() + listView_->spacing());
+                        if(pos.y() + grid.height() > workArea.bottom() + 1) {
+                            pos.setX(pos.x() + grid.width() + listView_->spacing());
+                            pos.setY(workArea.top());
+                        }
+                        customItemPos_[name] = pos;
+                    }
+                }
+            }
+            saveItemPositions();
+        }
     }
+}
+
+void DesktopWindow::alignToGrid(QPoint& pos, const QPoint& topLeft, const QSize& grid, const int spacing) {
+    qreal w = qAbs((qreal)pos.x() - (qreal)topLeft.x())
+              / (qreal)(grid.width() + spacing);
+    qreal h = qAbs(pos.y() - (qreal)topLeft.y())
+              / (qreal)(grid.height() + spacing);
+    pos.setX(topLeft.x() + qRound(w) * (grid.width() + spacing));
+    pos.setY(topLeft.y() + qRound(h) * (grid.height() + spacing));
 }
 
 void DesktopWindow::closeEvent(QCloseEvent* event) {
