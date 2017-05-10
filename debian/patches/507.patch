@@ -1,0 +1,117 @@
+From 789c5dac9e0ad3c3acfaa396425f8a2d744b35fc Mon Sep 17 00:00:00 2001
+From: Tsu Jan <tsujan2000@gmail.com>
+Date: Wed, 10 May 2017 15:07:46 +0430
+Subject: [PATCH] Fix jerky desktop items
+
+Fixes https://github.com/lxde/pcmanfm-qt/issues/497.
+
+Desktop items may make redundant (and ugly) jumps when other items are added/removed. Here, such jumps are prevented by disabling view updates temporarily. For wallpaper painting not to be affected by (lack of) view updates, wallpaper is painted on the deaktop itself, not on its viewport.
+---
+ pcmanfm/desktopwindow.cpp | 32 +++++++++++++++++++-------------
+ pcmanfm/desktopwindow.h   |  1 +
+ 2 files changed, 20 insertions(+), 13 deletions(-)
+
+diff --git a/pcmanfm/desktopwindow.cpp b/pcmanfm/desktopwindow.cpp
+index b84a5dd..59b7fc4 100644
+--- a/pcmanfm/desktopwindow.cpp
++++ b/pcmanfm/desktopwindow.cpp
+@@ -84,9 +84,9 @@ DesktopWindow::DesktopWindow(int screenNum):
+ 
+     // This is to workaround Qt bug 54384 which affects Qt >= 5.6
+     // https://bugreports.qt.io/browse/QTBUG-54384
+-    // Setting a QPixmap larger then the screen resolution to the background of a list view won't work.
+-    // So we did a hack here: Disable the automatic background painting.
+-    // Then paint the background of the list view ourselves by hook into its paint event handling method with a event filter.
++    // Setting a QPixmap larger then the screen resolution to desktop's QPalette won't work.
++    // So we make the viewport transparent by preventing its backround from being filled automatically.
++    // Then we paint desktop's background ourselves by using its paint event handling method.
+     listView_->viewport()->setAutoFillBackground(false);
+ 
+     // NOTE: When XRnadR is in use, the all screens are actually combined to form a
+@@ -311,8 +311,7 @@ void DesktopWindow::updateWallpaper() {
+         if(wallpaperMode_ == WallpaperTile) { // use the original size
+             image = QImage(wallpaperFile_);
+             // Note: We can't use the QPainter::drawTiledPixmap(), because it doesn't tile
+-            // correctly for background pixmaps bigger than the current screen size. This
+-            // may be also the reason for wrong rendering by QWidget::setAutoFillBackground(true)
++            // correctly for background pixmaps bigger than the current screen size.
+             const QSize s = size();
+             pixmap = QPixmap{s};
+             QPainter painter{&pixmap};
+@@ -414,7 +413,9 @@ void DesktopWindow::onRowsInserted(const QModelIndex& parent, int start, int end
+     Q_UNUSED(parent);
+     Q_UNUSED(start);
+     Q_UNUSED(end);
+-    queueRelayout();
++    // disable view updates temporarily and delay relayout to prevent items from shaking
++    listView_->setUpdatesEnabled(false);
++    queueRelayout(100);
+ }
+ 
+ void DesktopWindow::onRowsAboutToBeRemoved(const QModelIndex& parent, int start, int end) {
+@@ -443,7 +444,8 @@ void DesktopWindow::onRowsAboutToBeRemoved(const QModelIndex& parent, int start,
+             saveItemPositions();
+         }
+     }
+-    queueRelayout();
++    listView_->setUpdatesEnabled(false);
++    queueRelayout(100);
+ }
+ 
+ void DesktopWindow::onLayoutChanged() {
+@@ -563,8 +565,7 @@ void DesktopWindow::removeBottomGap() {
+ void DesktopWindow::paintBackground(QPaintEvent* event) {
+     // This is to workaround Qt bug 54384 which affects Qt >= 5.6
+     // https://bugreports.qt.io/browse/QTBUG-54384
+-    // Since Qt does not paint the background of the QListView using the QPixmap we set properly, we do it ourselves.
+-    QPainter painter(listView_->viewport()); // the painter paints on the viewport widget, not the QListView.
++    QPainter painter(this);
+     if(wallpaperMode_ == WallpaperNone || wallpaperPixmap_.isNull()) {
+         painter.fillRect(event->rect(), QBrush(bgColor_));
+     }
+@@ -659,6 +660,10 @@ void DesktopWindow::relayoutItems() {
+             break;
+         }
+     }
++
++    if(!listView_->updatesEnabled()) {
++        listView_->setUpdatesEnabled(true);
++    }
+ }
+ 
+ void DesktopWindow::loadItemPositions() {
+@@ -931,10 +936,6 @@ bool DesktopWindow::eventFilter(QObject* watched, QEvent* event) {
+     }
+     else if(watched == listView_->viewport()) {
+         switch(event->type()) {
+-        case QEvent::Paint: {
+-            paintBackground(static_cast<QPaintEvent*>(event));
+-            break;
+-        }
+         case QEvent::MouseButtonPress:
+         case QEvent::MouseButtonRelease:
+             if(showWmMenu_) {
+@@ -1024,6 +1025,11 @@ void DesktopWindow::closeEvent(QCloseEvent* event) {
+     event->ignore();
+ }
+ 
++void DesktopWindow::paintEvent(QPaintEvent *event) {
++    paintBackground(event);
++    QWidget::paintEvent(event);
++}
++
+ void DesktopWindow::setScreenNum(int num) {
+     if(screenNum_ != num) {
+         screenNum_ = num;
+diff --git a/pcmanfm/desktopwindow.h b/pcmanfm/desktopwindow.h
+index cf3a40a..f16839c 100644
+--- a/pcmanfm/desktopwindow.h
++++ b/pcmanfm/desktopwindow.h
+@@ -95,6 +95,7 @@ class DesktopWindow : public View {
+ 
+     virtual void childDropEvent(QDropEvent* e) override;
+     virtual void closeEvent(QCloseEvent* event) override;
++    virtual void paintEvent(QPaintEvent *event) override;
+ 
+ protected Q_SLOTS:
+     void onOpenDirRequested(const Fm::FilePath& path, int target);

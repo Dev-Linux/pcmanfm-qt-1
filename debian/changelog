@@ -1,3 +1,9 @@
+pcmanfm-qt (0.11.4~57-g5fc0c7e-2) lxqt-snapshots; urgency=medium
+
+  * Added PR 507 
+
+ -- Alf Gaida <agaida@siduction.org>  Thu, 11 May 2017 00:21:39 +0200
+
 pcmanfm-qt (0.11.4~57-g5fc0c7e-1) lxqt-snapshots; urgency=medium
 
   * New snapshot: 0.11.3-57-g5fc0c7e
